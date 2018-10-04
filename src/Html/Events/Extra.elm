@@ -7,9 +7,14 @@ module Html.Events.Extra
         , onEnter
         , targetSelectedIndex
         , targetValueFloat
+        , targetValueFloatParse
         , targetValueInt
+        , targetValueIntParse
         , targetValueMaybe
         , targetValueMaybeFloat
+        , targetValueMaybeFloatParse
+        , targetValueMaybeInt
+        , targetValueMaybeIntParse
         )
 
 {-| Additional decoders for use with event handlers in html.
@@ -25,7 +30,8 @@ module Html.Events.Extra
 
 # Typed event decoders
 
-@docs targetValueFloat, targetValueInt, targetValueMaybe, targetValueMaybeFloat
+@docs targetValueFloat, targetValueInt, targetValueMaybe, targetValueMaybeFloat, targetValueMaybeInt
+@docs targetValueFloatParse, targetValueIntParse, targetValueMaybeFloatParse, targetValueMaybeIntParse
 @docs targetSelectedIndex
 
 
@@ -142,6 +148,72 @@ targetValueMaybeFloat =
                     Just _ ->
                         Json.map Just targetValueFloat
             )
+
+
+{-| Integer or empty target value.
+-}
+targetValueMaybeInt : Json.Decoder (Maybe Int)
+targetValueMaybeInt =
+    let
+        traverse f mx =
+            case mx of
+                Nothing ->
+                    Ok Nothing
+
+                Just x ->
+                    Result.map Just (f x)
+    in
+    customDecoder targetValueMaybe (traverse (Result.fromMaybe "Couldn't parse MaybeInt" << String.toInt))
+
+
+{-| Parse a floating-point value from the input instead of using `valueAsNumber`.
+Use this with inputs that do not have a `number` type.
+-}
+targetValueFloatParse : Json.Decoder Float
+targetValueFloatParse =
+    customDecoder targetValue (Result.fromMaybe "Couldn't parse float" << String.toFloat)
+
+
+{-| Parse an integer value from the input instead of using `valueAsNumber`.
+Use this with inputs that do not have a `number` type.
+-}
+targetValueIntParse : Json.Decoder Int
+targetValueIntParse =
+    customDecoder targetValue (Result.fromMaybe "Couldn't parse Int" << String.toInt)
+
+
+{-| Parse an optional floating-point value from the input instead of using `valueAsNumber`.
+Use this with inputs that do not have a `number` type.
+-}
+targetValueMaybeFloatParse : Json.Decoder (Maybe Float)
+targetValueMaybeFloatParse =
+    let
+        traverse f mx =
+            case mx of
+                Nothing ->
+                    Ok Nothing
+
+                Just x ->
+                    Result.map Just (f x)
+    in
+    customDecoder targetValueMaybe (traverse (Result.fromMaybe "Couldn't parse MaybeFloat" << String.toFloat))
+
+
+{-| Parse an optional integer value from the input instead of using `valueAsNumber`.
+Use this with inputs that do not have a `number` type.
+-}
+targetValueMaybeIntParse : Json.Decoder (Maybe Int)
+targetValueMaybeIntParse =
+    let
+        traverse f mx =
+            case mx of
+                Nothing ->
+                    Ok Nothing
+
+                Just x ->
+                    Result.map Just (f x)
+    in
+    customDecoder targetValueMaybe (traverse (Result.fromMaybe "Couldn't parse MaybeInt" << String.toInt))
 
 
 {-| Parse the index of the selected option of a select.
